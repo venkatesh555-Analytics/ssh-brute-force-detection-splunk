@@ -1,0 +1,77 @@
+# SOC Investigation Report – SSH Brute Force Attack
+
+## Summary
+A potential SSH brute force attack was detected in the environment based on multiple authentication failures from specific source IP addresses.
+
+---
+
+## Detection Details
+- **Log Source**: SSH Logs  
+- **Tool Used**: Splunk SIEM  
+- **Detection Method**: SPL query identifying repeated login failures  
+
+---
+
+## Alert Description
+Multiple failed SSH login attempts were observed from certain IP addresses, indicating a possible brute force attack.
+
+---
+
+## Investigation Steps
+
+### 1. Identified Failed Login Attempts
+```spl
+index=* "authentication failure"
+| rex "rhost=(?<clientip>\d+\.\d+\.\d+\.\d+)"
+| stats count by clientip
+| sort -count
+
+Result: Multiple IPs with high number of failed attempts
+
+2. Detected Suspicious IPs
+index=* "authentication failure"
+| rex "rhost=(?<clientip>\d+\.\d+\.\d+\.\d+)"
+| stats count by clientip
+| where count > 10
+| sort -count
+
+Suspicious IPs identified:
+
+150.183.249.110
+207.243.167.114
+60.30.224.116
+3. Username Targeting Analysis
+index=* "authentication failure"
+| rex "user=(?<user>\w+)"
+| stats count by user
+| sort -count
+
+Common targeted usernames:
+
+root
+admin
+test
+4. Successful Login Check
+index=* "session opened"
+
+Result:
+Successful logins observed, but no source IP available for correlation.
+
+Findings
+High volume of failed login attempts detected
+Multiple IP addresses involved in attack
+Pattern consistent with brute force attack
+Common usernames targeted by attackers
+Limitations
+Successful login events did not include source IP address
+Unable to correlate attacker IP with successful login
+Recommendations
+Implement account lockout policy after multiple failed attempts
+Enable SSH rate limiting
+Use fail2ban or similar tools
+Restrict SSH access using firewall rules
+Disable root login via SSH
+Conclusion
+
+The activity observed is consistent with an SSH brute force attack.
+Immediate mitigation actions are recommended to prevent unauthorized access.
