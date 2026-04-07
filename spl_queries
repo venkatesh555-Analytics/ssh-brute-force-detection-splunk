@@ -1,1 +1,32 @@
-
+1. Top Attacking IPs (Most Important)
+index=* "authentication failure"
+| rex "rhost=(?<clientip>\d+\.\d+\.\d+\.\d+)"
+| stats count by clientip
+| sort -count
+| head 10
+2. Failed Login Trend (Attack Timeline)
+index=* "authentication failure"
+| timechart count span=1h
+3. Suspicious IPs (Brute Force Detection)
+index=* "authentication failure"
+| rex "rhost=(?<clientip>\d+\.\d+\.\d+\.\d+)"
+| stats count by clientip
+| where count > 10
+| sort -count
+4. Successful Logins
+index=* "session opened"
+| rex "rhost=(?<clientip>\d+\.\d+\.\d+\.\d+)"
+| stats count by clientip
+| sort -count
+5. Username Attack Analysis
+index=* "authentication failure"
+| rex "user=(?<user>\w+)"
+| stats count by user
+| sort -count
+6. Events Over Time (All Activity)
+index=*
+| timechart count
+8. Top Failed URLs 
+index=* "authentication failure"
+| stats count by _raw
+| head 10
